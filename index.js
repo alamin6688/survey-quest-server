@@ -196,7 +196,7 @@ async function run() {
       }
     });
 
-    // update survey comment
+    // Update Survey Comment
     app.put("/surveys/comment", async (req, res) => {
       try {
         const newData = req.body;
@@ -226,6 +226,7 @@ async function run() {
           .send({ error: "An error occurred while updating the survey" });
       }
     });
+
     // update survey report
     app.put("/surveys/report", async (req, res) => {
       try {
