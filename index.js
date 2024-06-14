@@ -10,7 +10,7 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173","https://survey-quest-ae959.web.app","https://survey-quest-ae959.firebaseapp.com"],
     credentials: true,
   })
 );
@@ -316,7 +316,7 @@ async function run() {
       );
       res.send(result);
     });
-    
+
     app.patch("/surveys/:id/unpublish", async (req, res) => {
       const id = req.params.id;
       const result = await surveyCollection.updateOne(
