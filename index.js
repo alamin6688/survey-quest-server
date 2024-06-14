@@ -146,7 +146,7 @@ async function run() {
         .send({ success: true });
     });
 
-    // check if user is a admin
+    // Check if user is a admin
     app.get("/users/admin/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       console.log("Request Email:", email);
@@ -192,6 +192,7 @@ async function run() {
       }
       res.send({ surveyor });
     });
+
     // check if user is a user
     app.get("/users/user/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
@@ -231,6 +232,7 @@ async function run() {
       const result = await surveyCollection.find().toArray();
       res.send(result);
     });
+
     // Post survey
     app.post("/surveys", async (req, res) => {
       const survey = req.body;
