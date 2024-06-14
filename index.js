@@ -176,14 +176,57 @@ async function run() {
       res.send({ proUser });
     });
 
+    // check if user is a surveyor
+    app.get("/users/surveyor/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let surveyor = false;
+      if (user) {
+        surveyor = user?.role === "surveyor";
+      }
+      res.send({ surveyor });
+    });
+    // check if user is a user
+    app.get("/users/user/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+      const query = { email: email };
+      const queryUser = await userCollection.findOne(query);
+      let user = false;
+      if (queryUser) {
+        user = queryUser?.role === "user";
+      }
+      res.send({ user });
+    });
+
     // Surveys related API
     app.get("/surveys", async (req, res) => {
       const result = await surveyCollection.find().toArray();
       res.send(result);
     });
-
+    // Post survey
+    // Post survey
     app.post("/surveys", async (req, res) => {
-      res.send(await surveyCollection.insertOne(req.body));
+      const survey = req.body;
+      const result = await surveyCollection.insertOne(survey);
+      const email = { email: survey.surverior };
+      const admin = await userCollection.findOne(email);
+
+      // Update user role to 'surveyor'
+      let updateUserRole;
+      if (admin && admin.role !== "admin") {
+        updateUserRole = await userCollection.updateOne(email, {
+          $set: { role: "surveyor" },
+        });
+      }
+
+      res.send({ result, updateUserRole });
     });
 
     // vote to survey
