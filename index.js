@@ -73,6 +73,25 @@ async function run() {
     userCollection = client.db("surveyDb").collection("users");
     surveyCollection = client.db("surveyDb").collection("surveys");
 
+    //make pro user to user
+    app.patch("/users/:id/make-user", async (req, res) => {
+      const id = req.params.id;
+      const result = await userCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { role: "user" } }
+      );
+      res.send(result);
+    });
+    //make user to pro user
+    app.patch("/users/:id/make-pro-user", async (req, res) => {
+      const id = req.params.id;
+      const result = await userCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { role: "pro-user" } }
+      );
+      res.send(result);
+    });
+
     // Users related API
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
@@ -160,40 +179,18 @@ async function run() {
     });
 
     app.post("/surveys", async (req, res) => {
-      const survey = req.body;
-      const result = await surveyCollection.insertOne(survey);
-      res.send(result);
+      res.send(await surveyCollection.insertOne(req.body));
     });
 
-    // update survey
-    app.put("/surveys", async (req, res) => {
-      try {
-        const newInfo = req.body;
-        const updateDoc = {
-          $set: {
-            vote: {
-              voteCount: newInfo.voteCount,
-              votedUser: newInfo.votedUser,
-            },
-          },
-        };
-
+    // vote to survey
+    app.put("/surveys/vote", async (req, res) => {
+        const newVote = req.body;
+        console.log(newVote)
         const result = await surveyCollection.updateOne(
-          { _id: newInfo.id },
-          updateDoc
+          { _id: newVote.id },
+          {$inc: { voteCount: newVote.voteCount }}
         );
-
-        if (result.matchedCount === 0) {
-          return res.status(404).send({ error: "Survey not found" });
-        }
-
         res.send(result);
-      } catch (error) {
-        console.error(error);
-        res
-          .status(500)
-          .send({ error: "An error occurred while updating the survey" });
-      }
     });
 
     // Update Survey Comment
