@@ -65,6 +65,7 @@ let userCollection;
 let surveyCollection;
 let commentCollection;
 let reportCollection;
+let paymentCollection;
 
 async function run() {
   try {
@@ -76,6 +77,7 @@ async function run() {
     surveyCollection = client.db("surveyDb").collection("surveys");
     commentCollection = client.db("surveyDb").collection("comments");
     reportCollection = client.db("surveyDb").collection("reports");
+    paymentCollection = client.db("surveyDb").collection("payments");
 
     //make pro user to user
     app.patch("/users/:id/make-user", async (req, res) => {
@@ -230,7 +232,6 @@ async function run() {
       res.send(result);
     });
     // Post survey
-    // Post survey
     app.post("/surveys", async (req, res) => {
       const survey = req.body;
       const result = await surveyCollection.insertOne(survey);
@@ -257,6 +258,28 @@ async function run() {
         { $set: { voteCount: newVote.voteCount } }
       );
       res.send(result);
+    });
+
+    // post payments
+    app.post("/payments", async (req, res) => {
+      const paymentData = req.body;
+      const email = { email: paymentData.email };
+      const result = await paymentCollection.insertOne(paymentData);
+      const admin = await userCollection.findOne(email);
+
+      // Update user role to 'surveyor'
+      let updateUserRole;
+      if (admin && admin.role !== "admin") {
+        updateUserRole = await userCollection.updateOne(email, {
+          $set: { role: "pro-user" },
+        });
+      }
+
+      res.send({ result, updateUserRole });
+    });
+    // get payments
+    app.get("/payments", async (req, res) => {
+      res.send(await paymentCollection.find().toArray());
     });
 
     // post Survey Comment
