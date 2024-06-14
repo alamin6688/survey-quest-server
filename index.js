@@ -302,6 +302,24 @@ async function run() {
       res.send(await reportCollection.find().toArray());
     });
 
+    // Toggle Status Change
+    app.patch('/surveys/:id/publish', async(req, res)=>{
+      const id = req.params.id;
+      const result = await surveyCollection.updateOne(
+        {_id: new ObjectId(id) },
+        {$set:{status:"publish" }}
+      )
+      res.send(result)
+    })
+    app.patch('/surveys/:id/unpublish', async(req, res)=>{
+      const id = req.params.id;
+      const result = await surveyCollection.updateOne(
+        {_id: new ObjectId(id) },
+        {$set:{status:"unpublish" }}
+      )
+      res.send(result)
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
