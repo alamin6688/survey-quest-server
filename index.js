@@ -63,6 +63,8 @@ const client = new MongoClient(uri, {
 
 let userCollection;
 let surveyCollection;
+let commentCollection;
+let reportCollection;
 
 async function run() {
   try {
@@ -72,6 +74,8 @@ async function run() {
     // Get the database and collection on which to run the operation
     userCollection = client.db("surveyDb").collection("users");
     surveyCollection = client.db("surveyDb").collection("surveys");
+    commentCollection = client.db("surveyDb").collection("comments");
+    reportCollection = client.db("surveyDb").collection("reports");
 
     //make pro user to user
     app.patch("/users/:id/make-user", async (req, res) => {
@@ -183,75 +187,34 @@ async function run() {
     });
 
     // vote to survey
-    app.put("/surveys/vote", async (req, res) => {
-        const newVote = req.body;
-        console.log(newVote)
-        const result = await surveyCollection.updateOne(
-          { _id: newVote.id },
-          {$inc: { voteCount: newVote.voteCount }}
-        );
-        res.send(result);
+    app.put("/surveys/:id/vote", async (req, res) => {
+      const newVote = req.body;
+      const id = req.params.id;
+      const result = await surveyCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { voteCount: newVote.voteCount } }
+      );
+      res.send(result);
     });
 
-    // Update Survey Comment
-    app.put("/surveys/comment", async (req, res) => {
-      try {
-        const newData = req.body;
-        const updateDoc = {
-          $set: {
-            comments: {
-              comment: newData.comment,
-              commentedUser: newData.commentedUser,
-            },
-          },
-        };
-
-        const result = await surveyCollection.updateOne(
-          { _id: newData.id },
-          updateDoc
-        );
-
-        if (result.matchedCount === 0) {
-          return res.status(404).send({ error: "Survey not found" });
-        }
-
-        res.send(result);
-      } catch (error) {
-        console.error(error);
-        res
-          .status(500)
-          .send({ error: "An error occurred while updating the survey" });
-      }
+    // post Survey Comment
+    app.post("/comments", async (req, res) => {
+      const newComment = req.body;
+      res.send(await commentCollection.insertOne(newComment));
+    });
+    // get Survey Comments
+    app.get("/comments", async (req, res) => {
+      res.send(await commentCollection.find().toArray());
     });
 
-    // update survey report
-    app.put("/surveys/report", async (req, res) => {
-      try {
-        const newReport = req.body;
-        const updateDoc = {
-          $set: {
-            reports: {
-              reportedUser: newReport.reportedUser,
-            },
-          },
-        };
-
-        const result = await surveyCollection.updateOne(
-          { _id: newReport.id },
-          updateDoc
-        );
-
-        if (result.matchedCount === 0) {
-          return res.status(404).send({ error: "Survey not found" });
-        }
-
-        res.send(result);
-      } catch (error) {
-        console.error(error);
-        res
-          .status(500)
-          .send({ error: "An error occurred while updating the survey" });
-      }
+    // post survey report
+    app.post("/reports", async (req, res) => {
+      const newReport = req.body;
+      res.send(await reportCollection.insertOne(newReport));
+    });
+    // get Survey reports
+    app.get("/reports", async (req, res) => {
+      res.send(await reportCollection.find().toArray());
     });
 
     // Send a ping to confirm a successful connection
