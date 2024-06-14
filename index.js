@@ -10,7 +10,11 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173","https://survey-quest-ae959.web.app","https://survey-quest-ae959.firebaseapp.com"],
+    origin: [
+      "http://localhost:5173",
+      "https://survey-quest-ae959.web.app",
+      "https://survey-quest-ae959.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
@@ -66,6 +70,7 @@ let surveyCollection;
 let commentCollection;
 let reportCollection;
 let paymentCollection;
+let participateCollection;
 
 async function run() {
   try {
@@ -78,6 +83,7 @@ async function run() {
     commentCollection = client.db("surveyDb").collection("comments");
     reportCollection = client.db("surveyDb").collection("reports");
     paymentCollection = client.db("surveyDb").collection("payments");
+    participateCollection = client.db("surveyDb").collection("participates");
 
     //Make user to pro user
     app.patch("/users/:id/make-pro-user", async (req, res) => {
@@ -256,11 +262,22 @@ async function run() {
     app.put("/surveys/:id/vote", async (req, res) => {
       const newVote = req.body;
       const id = req.params.id;
-      const result = await surveyCollection.updateOne(
+      const result1 = await surveyCollection.updateOne(
         { _id: new ObjectId(id) },
         { $set: { voteCount: newVote.voteCount } }
       );
-      res.send(result);
+      const participateData = {
+        votedUserName:newVote.votedUserName,
+        votedUserEmail:newVote.votedUserEmail,
+        surveyId:newVote.surveyId,
+        usersVote:newVote.usersVote,
+      };
+      const result2 = await participateCollection.insertOne(participateData);
+      res.send({result1, result2});
+    });
+    // get participates
+    app.get("/participates", async (req, res) => {
+      res.send(await participateCollection.find().toArray());
     });
 
     // Post payments
