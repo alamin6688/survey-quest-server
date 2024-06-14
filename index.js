@@ -205,6 +205,25 @@ async function run() {
       res.send({ user });
     });
 
+    //update survey by id
+    app.patch("/surveys/:id", async (req, res) => {
+      const updatedSurvey = req.body;
+      const id = req.params.id;
+      const result = await surveyCollection.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            image: updatedSurvey.image,
+            title: updatedSurvey.title,
+            description: updatedSurvey.description,
+            category: updatedSurvey.category,
+            deadline: updatedSurvey.deadline,
+          },
+        }
+      );
+      res.send(result);
+    });
+
     // Surveys related API
     app.get("/surveys", async (req, res) => {
       const result = await surveyCollection.find().toArray();
