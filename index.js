@@ -79,21 +79,22 @@ async function run() {
     reportCollection = client.db("surveyDb").collection("reports");
     paymentCollection = client.db("surveyDb").collection("payments");
 
-    //make pro user to user
-    app.patch("/users/:id/make-user", async (req, res) => {
-      const id = req.params.id;
-      const result = await userCollection.updateOne(
-        { _id: new ObjectId(id) },
-        { $set: { role: "user" } }
-      );
-      res.send(result);
-    });
-    //make user to pro user
+    //Make user to pro user
     app.patch("/users/:id/make-pro-user", async (req, res) => {
       const id = req.params.id;
       const result = await userCollection.updateOne(
         { _id: new ObjectId(id) },
         { $set: { role: "pro-user" } }
+      );
+      res.send(result);
+    });
+
+    //Make pro user to user
+    app.patch("/users/:id/make-user", async (req, res) => {
+      const id = req.params.id;
+      const result = await userCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { role: "user" } }
       );
       res.send(result);
     });
@@ -119,7 +120,7 @@ async function run() {
       }
     });
 
-    // AUTH related API
+    // Auth related API
     app.post("/jwt", async (req, res) => {
       const user = req.body;
       console.log(user);
@@ -135,7 +136,7 @@ async function run() {
         .send({ success: true });
     });
 
-    // if invallid token then clear jwt
+    // If invallid token then clear jwt
     app.post("/clear-jwt", (req, res) => {
       res
         .clearCookie("token", {
@@ -163,7 +164,7 @@ async function run() {
       res.send({ admin });
     });
 
-    // check if user is a pro user
+    // Check if user is a pro user
     app.get("/users/proUser/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       if (email !== req.user.email) {
@@ -178,7 +179,7 @@ async function run() {
       res.send({ proUser });
     });
 
-    // check if user is a surveyor
+    // Check if user is a surveyor
     app.get("/users/surveyor/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       if (email !== req.user.email) {
@@ -193,7 +194,7 @@ async function run() {
       res.send({ surveyor });
     });
 
-    // check if user is a user
+    // Check if user is a user
     app.get("/users/user/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       if (email !== req.user.email) {
@@ -208,7 +209,7 @@ async function run() {
       res.send({ user });
     });
 
-    //update survey by id
+    //Update survey by id
     app.patch("/surveys/:id", async (req, res) => {
       const updatedSurvey = req.body;
       const id = req.params.id;
@@ -251,7 +252,7 @@ async function run() {
       res.send({ result, updateUserRole });
     });
 
-    // vote to survey
+    // Vote to survey
     app.put("/surveys/:id/vote", async (req, res) => {
       const newVote = req.body;
       const id = req.params.id;
@@ -262,7 +263,7 @@ async function run() {
       res.send(result);
     });
 
-    // post payments
+    // Post payments
     app.post("/payments", async (req, res) => {
       const paymentData = req.body;
       const email = { email: paymentData.email };
@@ -279,48 +280,51 @@ async function run() {
 
       res.send({ result, updateUserRole });
     });
-    // get payments
+    // Get payments
     app.get("/payments", async (req, res) => {
       res.send(await paymentCollection.find().toArray());
     });
 
-    // post Survey Comment
+    // Post Survey Comment
     app.post("/comments", async (req, res) => {
       const newComment = req.body;
       res.send(await commentCollection.insertOne(newComment));
     });
-    // get Survey Comments
+
+    // Get Survey Comments
     app.get("/comments", async (req, res) => {
       res.send(await commentCollection.find().toArray());
     });
 
-    // post survey report
+    // Post survey report
     app.post("/reports", async (req, res) => {
       const newReport = req.body;
       res.send(await reportCollection.insertOne(newReport));
     });
-    // get Survey reports
+
+    // Get Survey reports
     app.get("/reports", async (req, res) => {
       res.send(await reportCollection.find().toArray());
     });
 
     // Toggle Status Change
-    app.patch('/surveys/:id/publish', async(req, res)=>{
+    app.patch("/surveys/:id/publish", async (req, res) => {
       const id = req.params.id;
       const result = await surveyCollection.updateOne(
-        {_id: new ObjectId(id) },
-        {$set:{status:"publish" }}
-      )
-      res.send(result)
-    })
-    app.patch('/surveys/:id/unpublish', async(req, res)=>{
+        { _id: new ObjectId(id) },
+        { $set: { status: "publish" } }
+      );
+      res.send(result);
+    });
+    
+    app.patch("/surveys/:id/unpublish", async (req, res) => {
       const id = req.params.id;
       const result = await surveyCollection.updateOne(
-        {_id: new ObjectId(id) },
-        {$set:{status:"unpublish" }}
-      )
-      res.send(result)
-    })
+        { _id: new ObjectId(id) },
+        { $set: { status: "unpublish" } }
+      );
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
