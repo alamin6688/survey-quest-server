@@ -12,8 +12,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://survey-quest-ae959.web.app",
-      "https://survey-quest-ae959.firebaseapp.com",
+      "https://aquamarine-dasik-77cfa0.netlify.app",
+      "https://survey-quest-ae959.web.app"
     ],
     credentials: true,
   })
@@ -75,7 +75,7 @@ let participateCollection;
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     // Get the database and collection on which to run the operation
     userCollection = client.db("surveyDb").collection("users");
@@ -267,13 +267,13 @@ async function run() {
         { $set: { voteCount: newVote.voteCount } }
       );
       const participateData = {
-        votedUserName:newVote.votedUserName,
-        votedUserEmail:newVote.votedUserEmail,
-        surveyId:newVote.surveyId,
-        usersVote:newVote.usersVote,
+        votedUserName: newVote.votedUserName,
+        votedUserEmail: newVote.votedUserEmail,
+        surveyId: newVote.surveyId,
+        usersVote: newVote.usersVote,
       };
       const result2 = await participateCollection.insertOne(participateData);
-      res.send({result1, result2});
+      res.send({ result1, result2 });
     });
     // get participates
     app.get("/participates", async (req, res) => {
